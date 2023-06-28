@@ -2,7 +2,14 @@
 Simple sand/water particle physics simulation implemented in Rust
 
 ## Running the project
-
+Before you start, make sure you have rustc and cargo installed.
+You can check with
+```sh
+rustc --version
+```
+```sh
+cargo --version
+```
 1. Clone the repo
 
 ```sh
