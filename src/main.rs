@@ -4,9 +4,9 @@ use minifb::{Key, MouseButton, MouseMode, Scale, Window, WindowOptions};
 
 const WIDTH: usize = 200;
 const HEIGHT: usize = 100;
+
 const SAND_COLOR: u32 = 0xe4bc80;
 const BACKGROUND_COLOR: u32 = 0x000000;
-const CURSOR_COLOR: u32 = 0x00FF00;
 fn main() {
     // Create a window with a specific resolution
     let mut window = Window::new(
