@@ -3,20 +3,20 @@ extern crate minifb;
 use minifb::{Key, MouseButton, MouseMode, Scale, Window, WindowOptions};
 mod physics;
 
-struct Screen {
-    WIDTH: usize,
-    HEIGHT: usize,
+pub struct Screen {
+    width: usize,
+    height: usize,
     buffer: Vec<u32>,
     window: Window,
 }
 
 impl Screen {
-    fn new(WIDTH: usize, HEIGHT: usize) -> Screen {
-        let buffer: Vec<u32> = vec![0; WIDTH * HEIGHT]; // Calculate the third value
+    fn new(width: usize, height: usize) -> Screen {
+        let buffer: Vec<u32> = vec![0; width * height]; // Calculate the third value
         let mut window = Window::new(
             "Pixel Renderer",
-            WIDTH,
-            HEIGHT,
+            width,
+            height,
             WindowOptions {
                 scale: Scale::X4, // Scale factor
                 ..WindowOptions::default()
@@ -27,10 +27,16 @@ impl Screen {
         window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
         // Create a buffer to hold the pixel data
         Screen {
-            WIDTH,
-            HEIGHT,
+            width,
+            height,
             buffer,
             window,
+        }
+    }
+    fn as_particle(&self, index: usize) -> Particle {
+        match self.buffer[index] {
+            0x000000 => Particle::Background,
+            0xe4bc80 => Particle::Sand,
         }
     }
 }
@@ -55,56 +61,55 @@ enum Position {
 
 fn main() {
     // Create a window with a specific resolution
-    let mut Screen: Screen = Screen::new(200, 100);
-    while Screen.window.is_open() && !Screen.window.is_key_down(Key::Escape) {
+    let mut screen: Screen = Screen::new(200, 100);
+    while screen.window.is_open() && !screen.window.is_key_down(Key::Escape) {
         // Get the current mouse position
-        if Screen.window.get_mouse_down(MouseButton::Left) {
-            let mouse_pos: (f32, f32) = Screen.window.get_mouse_pos(MouseMode::Clamp).unwrap();
+        if screen.window.get_mouse_down(MouseButton::Left) {
+            let mouse_pos: (f32, f32) = screen.window.get_mouse_pos(MouseMode::Clamp).unwrap();
             // Get the coordinates of the mouse click
             let click_x: usize = mouse_pos.0 as usize;
             let click_y: usize = mouse_pos.1 as usize;
 
             // Set the pixel at the mouse click position to green
-            Screen.buffer[click_x + click_y * Screen.WIDTH] = Particle::Sand.get_color();
+            screen.buffer[click_x + click_y * screen.width] = Particle::Sand.get_color();
             // RGB value for green
         }
 
-        update_physics(&mut Screen);
+        update_physics(&mut screen);
 
         // Render the buffer to the window
-        Screen
+        screen
             .window
-            .update_with_buffer(&Screen.buffer, Screen.WIDTH, Screen.HEIGHT)
+            .update_with_buffer(&screen.buffer, screen.width, screen.height)
             .unwrap();
     }
 }
 
-fn update_physics(Screen: &mut Screen) {
-    for y in (0..(Screen.HEIGHT - 1)).rev() {
-        for x in (0..(Screen.WIDTH - 1)).rev() {
+fn update_physics(screen: &mut Screen) {
+    for y in (0..(screen.height - 1)).rev() {
+        for x in (0..(screen.width - 1)).rev() {
             //Firstly sand physics
-            if Screen.buffer[x + y * Screen.WIDTH] == Particle::Sand.get_color() {
+            if screen.buffer[x + y * screen.width] == Particle::Sand.get_color() {
                 //If nothing is under, then gravity
-                match Screen.buffer[x + (y + 1) * Screen.WIDTH] {
+                match screen.as_particle(x + (y + 1) * screen.width) {
                     //If underneath a sand particle is nothing
-                    BACKGROUND_COLOR => physics::gravity(Screen, x, y),
+                    Particle::Background => physics::gravity(screen, x, y),
                     //If underneath a sand particle is another sand particle
-                    SAND_COLOR => match check_for_cases(&Screen, x, y) {
-                        Position::RightSide => physics::right_corner_stacking(Screen, x, y),
-                        Position::LeftSide => physics::left_corner_stacking(Screen, x, y),
-                        Position::Middle => physics::middle_stacking(Screen, x, y),
+                    Particle::Sand => match check_for_cases(screen, x, y) {
+                        Position::RightSide => physics::right_corner_stacking(screen, x, y),
+                        Position::LeftSide => physics::left_corner_stacking(screen, x, y),
+                        Position::Middle => physics::middle_stacking(screen, x, y),
                     },
-                    _ => (),
                 }
             }
         }
     }
 }
 
-fn check_for_cases(Screen: &Screen, x: usize, y: usize) -> Position {
+fn check_for_cases(screen: &Screen, x: usize, y: usize) -> Position {
     if x == 0 {
         Position::RightSide
-    } else if x == Screen.WIDTH {
+    } else if x == screen.width {
         Position::LeftSide
     } else {
         Position::Middle
