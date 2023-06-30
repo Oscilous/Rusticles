@@ -55,10 +55,10 @@ fn update_physics(buffer: &mut Vec<u32>) {
                         buffer[x + y * WIDTH] = BACKGROUND_COLOR;
                     }
                     SAND_COLOR => {
-                        if buffer[(x + 1) + y * WIDTH] == BACKGROUND_COLOR {
+                        if buffer[(x + 1) + (y + 1) * WIDTH] == BACKGROUND_COLOR {
                             buffer[(x + 1) + y * WIDTH] = SAND_COLOR;
                             buffer[x + y * WIDTH] = BACKGROUND_COLOR;
-                        } else if buffer[(x - 1) + y * WIDTH] == BACKGROUND_COLOR {
+                        } else if buffer[(x - 1) + (y + 1) * WIDTH] == BACKGROUND_COLOR {
                             buffer[(x - 1) + y * WIDTH] = SAND_COLOR;
                             buffer[x + y * WIDTH] = BACKGROUND_COLOR;
                         }
