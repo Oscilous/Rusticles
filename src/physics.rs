@@ -65,9 +65,9 @@ pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
     match check_postion(screen, x) {
         Position::LeftSide => {
             let mut negative_index = 0;
-            while (screen.buffer[x - negative_index + (y + 1) * screen.width]
+            while screen.buffer[x - negative_index + (y + 1) * screen.width]
                 != Particle::Background.get_color()
-                && x - negative_index != 0)
+                && x - negative_index != 0
             {
                 negative_index += 1;
             }
@@ -76,9 +76,9 @@ pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
         }
         Position::RightSide => {
             let mut positive_index = 0;
-            while (screen.buffer[x + positive_index + (y + 1) * screen.width]
+            while screen.buffer[x + positive_index + (y + 1) * screen.width]
                 != Particle::Background.get_color()
-                && x + positive_index != screen.width - 1)
+                && x + positive_index != screen.width - 1
             {
                 positive_index += 1;
             }
@@ -86,28 +86,42 @@ pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
             screen.buffer[x + y * screen.width] = Particle::Background.get_color();
         }
         Position::Middle => {
-            let mut positive_index = 0;
-            while (screen.buffer[x + positive_index + (y + 1) * screen.width]
-                != Particle::Background.get_color()
-                && x + positive_index != screen.width - 1)
-            {
-                positive_index += 1;
-            }
-            let mut negative_index = 0;
-            while (screen.buffer[x - negative_index + (y + 1) * screen.width]
-                != Particle::Background.get_color()
-                && x - negative_index != 0)
-            {
-                negative_index += 1;
-            }
-            if positive_index < negative_index {
-                screen.buffer[x + positive_index + y * screen.width] = Particle::Water.get_color();
-                screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-            } else {
-                screen.buffer[x - negative_index + y * screen.width] = Particle::Water.get_color();
-                screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-            }
-            println!("Positive: {positive_index}, negative: {negative_index}")
+            let target_index = check_for_closest_side(screen, x, y);
+            screen.buffer[target_index + y * screen.width] = Particle::Water.get_color();
+            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
         }
+    }
+}
+
+fn check_for_closest_side(screen: &mut Screen, x: usize, y: usize) -> usize {
+    let mut at_edge: bool = false;
+    let mut positive_index = 0;
+    while screen.buffer[x + positive_index + (y + 1) * screen.width]
+        != Particle::Background.get_color()
+    {
+        if x + positive_index == screen.width - 1 {
+            at_edge = true;
+            break;
+        }
+        positive_index += 1;
+    }
+
+    let mut negative_index = 0;
+    while screen.buffer[x - negative_index + (y + 1) * screen.width]
+        != Particle::Background.get_color()
+    {
+        if x - negative_index == 0 {
+            at_edge = true;
+            break;
+        }
+        negative_index += 1;
+    }
+
+    if positive_index < negative_index {
+        x + positive_index
+    } else if at_edge == true {
+        x
+    } else {
+        x - negative_index
     }
 }

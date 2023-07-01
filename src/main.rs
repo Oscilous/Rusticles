@@ -109,6 +109,7 @@ impl Particle {
 fn main() {
     // Create a window with a specific resolution
     let mut screen: Screen = Screen::new(200, 100);
+    let mut selected_particle: Particle = Particle::Sand;
     screen.update_window();
     while screen.window.is_open() && !screen.window.is_key_down(Key::Escape) {
         // Get the current mouse position
@@ -119,10 +120,15 @@ fn main() {
             let click_y: usize = mouse_pos.1 as usize;
             println!("x: {click_x}, y: {click_y}");
             // Set the pixel at the mouse click position to green
-            screen.buffer[click_x + click_y * screen.width] = Particle::Water.get_color();
+            screen.buffer[click_x + click_y * screen.width] = selected_particle.get_color();
             // RGB value for green
         }
-
+        if screen.window.is_key_down(Key::S) {
+            selected_particle = Particle::Sand;
+        }
+        if screen.window.is_key_down(Key::W) {
+            selected_particle = Particle::Water;
+        }
         screen.update_physics();
         screen.update_window();
         sleep(time::Duration::from_millis(1));
