@@ -7,14 +7,21 @@ enum Position {
     Middle,
 }
 
-pub fn gravity(screen: &mut Screen, x: usize, y: usize) {
+pub fn gravity(screen: &mut Screen, x: usize, y: usize, particle: Particle) {
     if y != screen.height - 1 {
-        screen.buffer[x + (y + 1) * screen.width] = Particle::Sand.get_color();
+        screen.buffer[x + (y + 1) * screen.width] = particle.get_color();
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
 }
 
-pub fn cascade(screen: &mut Screen, x: usize, y: usize) {
+pub fn sink_solid(screen: &mut Screen, x: usize, y: usize) {
+    if y != screen.height - 1 {
+        screen.buffer[x + (y + 1) * screen.width] = Particle::Sand.get_color();
+        screen.buffer[x + y * screen.width] = Particle::Water.get_color();
+    }
+}
+
+pub fn solid_cascade(screen: &mut Screen, x: usize, y: usize) {
     match check_postion(screen, x) {
         Position::LeftSide => cascade_to_the_right(screen, x, y),
         Position::RightSide => cascade_to_the_left(screen, x, y),
@@ -51,5 +58,20 @@ fn cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
         println!("right");
         screen.buffer[(x - 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+    }
+}
+
+pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
+    match check_postion(screen, x) {
+        Position::LeftSide => (),
+        Position::RightSide => (),
+        Position::Middle => {
+            let mut index = 0;
+            while (screen.buffer[x + index + y * screen.width] != Particle::Background.get_color()
+                && screen.buffer[x - index + y * screen.width] != Particle::Background.get_color())
+            {
+                index += 1;
+            }
+        }
     }
 }

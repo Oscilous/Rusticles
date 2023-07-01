@@ -39,6 +39,7 @@ impl Screen {
         match self.buffer[index] {
             0x000000 => Particle::Background,
             0xe4bc80 => Particle::Sand,
+            0x74ccf4 => Particle::Water,
             _ => panic!("Unknown particle"),
         }
     }
@@ -52,25 +53,46 @@ impl Screen {
         for y in (0..(self.height)).rev() {
             for x in (0..(self.width)).rev() {
                 //Firstly sand physics
-                if self.buffer[x + y * self.width] == Particle::Sand.get_color() {
-                    sand_amount += 1;
-                    //If nothing is under, then gravity
-                    if y != self.height - 1 {
-                        match self.as_particle(x + (y + 1) * self.width) {
-                            //If underneath a sand particle is nothing
-                            Particle::Background => physics::gravity(self, x, y),
-                            //If underneath a sand particle is another sand particle
-                            Particle::Sand => physics::cascade(self, x, y),
+                match self.as_particle(x + y * self.width) {
+                    Particle::Sand => {
+                        sand_amount += 1;
+                        //If nothing is under, then gravity
+                        if y != self.height - 1 {
+                            match self.as_particle(x + (y + 1) * self.width) {
+                                //If underneath a sand particle is nothing
+                                Particle::Background => {
+                                    physics::gravity(self, x, y, Particle::Sand)
+                                }
+                                //If underneath a sand particle is another sand particle
+                                Particle::Sand => physics::solid_cascade(self, x, y),
+                                Particle::Water => physics::sink_solid(self, x, y),
+                            }
                         }
                     }
+                    Particle::Water => {
+                        //If nothing is under, then gravity
+                        if y != self.height - 1 {
+                            match self.as_particle(x + (y + 1) * self.width) {
+                                //If underneath a sand particle is nothing
+                                Particle::Background => {
+                                    physics::gravity(self, x, y, Particle::Water)
+                                }
+                                //If underneath a sand particle is another sand particle
+                                Particle::Sand => physics::solid_cascade(self, x, y),
+                                Particle::Water => physics::fluid_cascade(self, x, y),
+                            }
+                        }
+                    }
+                    Particle::Background => (),
                 }
             }
         }
         println!("Sand: {sand_amount}");
     }
 }
-enum Particle {
+pub enum Particle {
     Sand,
+    Water,
     Background,
 }
 
@@ -78,6 +100,7 @@ impl Particle {
     fn get_color(&self) -> u32 {
         match *self {
             Particle::Sand => 0xe4bc80,
+            Particle::Water => 0x74ccf4,
             Particle::Background => 0x000000,
         }
     }
@@ -96,7 +119,7 @@ fn main() {
             let click_y: usize = mouse_pos.1 as usize;
             println!("x: {click_x}, y: {click_y}");
             // Set the pixel at the mouse click position to green
-            screen.buffer[click_x + click_y * screen.width] = Particle::Sand.get_color();
+            screen.buffer[click_x + click_y * screen.width] = Particle::Water.get_color();
             // RGB value for green
         }
 
