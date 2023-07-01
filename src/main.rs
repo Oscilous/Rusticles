@@ -1,6 +1,8 @@
 extern crate minifb;
 
 use minifb::{Key, MouseButton, MouseMode, Scale, Window, WindowOptions};
+use std::thread::sleep;
+use std::time;
 mod physics;
 
 pub struct Screen {
@@ -40,6 +42,32 @@ impl Screen {
             _ => panic!("Unknown particle"),
         }
     }
+    fn update_window(&mut self) {
+        self.window
+            .update_with_buffer(&self.buffer, self.width, self.height)
+            .unwrap();
+    }
+    fn update_physics(&mut self) {
+        let mut sand_amount = 0;
+        for y in (0..(self.height)).rev() {
+            for x in (0..(self.width)).rev() {
+                //Firstly sand physics
+                if self.buffer[x + y * self.width] == Particle::Sand.get_color() {
+                    sand_amount += 1;
+                    //If nothing is under, then gravity
+                    if y != self.height - 1 {
+                        match self.as_particle(x + (y + 1) * self.width) {
+                            //If underneath a sand particle is nothing
+                            Particle::Background => physics::gravity(self, x, y),
+                            //If underneath a sand particle is another sand particle
+                            Particle::Sand => physics::cascade(self, x, y),
+                        }
+                    }
+                }
+            }
+        }
+        println!("Sand: {sand_amount}");
+    }
 }
 enum Particle {
     Sand,
@@ -58,6 +86,7 @@ impl Particle {
 fn main() {
     // Create a window with a specific resolution
     let mut screen: Screen = Screen::new(200, 100);
+    screen.update_window();
     while screen.window.is_open() && !screen.window.is_key_down(Key::Escape) {
         // Get the current mouse position
         if screen.window.get_mouse_down(MouseButton::Left) {
@@ -71,29 +100,8 @@ fn main() {
             // RGB value for green
         }
 
-        update_physics(&mut screen);
-
-        // Render the buffer to the window
-        screen
-            .window
-            .update_with_buffer(&screen.buffer, screen.width, screen.height)
-            .unwrap();
-    }
-}
-
-fn update_physics(screen: &mut Screen) {
-    for y in (0..(screen.height - 1)).rev() {
-        for x in (0..(screen.width)).rev() {
-            //Firstly sand physics
-            if screen.buffer[x + y * screen.width] == Particle::Sand.get_color() {
-                //If nothing is under, then gravity
-                match screen.as_particle(x + (y + 1) * screen.width) {
-                    //If underneath a sand particle is nothing
-                    Particle::Background => physics::gravity(screen, x, y),
-                    //If underneath a sand particle is another sand particle
-                    Particle::Sand => physics::cascade(screen, x, y),
-                }
-            }
-        }
+        screen.update_physics();
+        screen.update_window();
+        sleep(time::Duration::from_millis(1));
     }
 }

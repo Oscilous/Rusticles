@@ -8,8 +8,10 @@ enum Position {
 }
 
 pub fn gravity(screen: &mut Screen, x: usize, y: usize) {
-    screen.buffer[x + (y + 1) * screen.width] = Particle::Sand.get_color();
-    screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+    if y != screen.height - 1 {
+        screen.buffer[x + (y + 1) * screen.width] = Particle::Sand.get_color();
+        screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+    }
 }
 
 pub fn cascade(screen: &mut Screen, x: usize, y: usize) {
@@ -36,7 +38,8 @@ fn cascade_to_the_left(screen: &mut Screen, x: usize, y: usize) {
     if screen.buffer[(x + 1) + (y + 1) * screen.width] == Particle::Background.get_color()
         && screen.buffer[(x + 1) + y * screen.width] == Particle::Background.get_color()
     {
-        screen.buffer[(x + 1) + y * screen.width] = Particle::Sand.get_color();
+        println!("left");
+        screen.buffer[(x + 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
 }
@@ -45,7 +48,8 @@ fn cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
     if screen.buffer[(x - 1) + (y + 1) * screen.width] == Particle::Background.get_color()
         && screen.buffer[(x - 1) + y * screen.width] == Particle::Background.get_color()
     {
-        screen.buffer[(x - 1) + y * screen.width] = Particle::Sand.get_color();
+        println!("right");
+        screen.buffer[(x - 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
 }
