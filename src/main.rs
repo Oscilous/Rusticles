@@ -37,6 +37,7 @@ impl Screen {
         match self.buffer[index] {
             0x000000 => Particle::Background,
             0xe4bc80 => Particle::Sand,
+            _ => panic!("Unknown particle"),
         }
     }
 }
@@ -53,11 +54,6 @@ impl Particle {
         }
     }
 }
-enum Position {
-    RightSide,
-    LeftSide,
-    Middle,
-}
 
 fn main() {
     // Create a window with a specific resolution
@@ -69,7 +65,7 @@ fn main() {
             // Get the coordinates of the mouse click
             let click_x: usize = mouse_pos.0 as usize;
             let click_y: usize = mouse_pos.1 as usize;
-
+            println!("x: {click_x}, y: {click_y}");
             // Set the pixel at the mouse click position to green
             screen.buffer[click_x + click_y * screen.width] = Particle::Sand.get_color();
             // RGB value for green
@@ -87,7 +83,7 @@ fn main() {
 
 fn update_physics(screen: &mut Screen) {
     for y in (0..(screen.height - 1)).rev() {
-        for x in (0..(screen.width - 1)).rev() {
+        for x in (0..(screen.width)).rev() {
             //Firstly sand physics
             if screen.buffer[x + y * screen.width] == Particle::Sand.get_color() {
                 //If nothing is under, then gravity
@@ -95,23 +91,9 @@ fn update_physics(screen: &mut Screen) {
                     //If underneath a sand particle is nothing
                     Particle::Background => physics::gravity(screen, x, y),
                     //If underneath a sand particle is another sand particle
-                    Particle::Sand => match check_for_cases(screen, x, y) {
-                        Position::RightSide => physics::right_corner_stacking(screen, x, y),
-                        Position::LeftSide => physics::left_corner_stacking(screen, x, y),
-                        Position::Middle => physics::middle_stacking(screen, x, y),
-                    },
+                    Particle::Sand => physics::cascade(screen, x, y),
                 }
             }
         }
-    }
-}
-
-fn check_for_cases(screen: &Screen, x: usize, y: usize) -> Position {
-    if x == 0 {
-        Position::RightSide
-    } else if x == screen.width {
-        Position::LeftSide
-    } else {
-        Position::Middle
     }
 }
