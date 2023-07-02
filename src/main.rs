@@ -40,7 +40,39 @@ impl Screen {
             0x000000 => Particle::Background,
             0xe4bc80 => Particle::Sand,
             0x74ccf4 => Particle::Water,
+            0x808080 => Particle::Frame,
             _ => panic!("Unknown particle"),
+        }
+    }
+    fn draw_frame(&mut self) {
+        for y in 0..(self.height) {
+            for x in 0..(self.width) {
+                if x == 0 || y == 0 || x == self.width - 1 || y == self.height - 1 {
+                    self.buffer[x + y * self.width] = Particle::Frame.get_color();
+                }
+            }
+        }
+        for y in 0..(self.height) {
+            for x in 0..(self.width) {
+                if y == 10 {
+                    self.buffer[x + y * self.width] = Particle::Frame.get_color();
+                }
+                if y > 0 && y < 10 {
+                    if x == self.width / 2 {
+                        self.buffer[x + y * self.width] = Particle::Frame.get_color();
+                    }
+                    if x < self.width / 2
+                        && self.buffer[x + y * self.width] == Particle::Background.get_color()
+                    {
+                        self.buffer[x + y * self.width] = Particle::Sand.get_color();
+                    }
+                    if x > self.width / 2
+                        && self.buffer[x + y * self.width] == Particle::Background.get_color()
+                    {
+                        self.buffer[x + y * self.width] = Particle::Water.get_color();
+                    }
+                }
+            }
         }
     }
     fn update_window(&mut self) {
@@ -57,33 +89,28 @@ impl Screen {
                     Particle::Sand => {
                         sand_amount += 1;
                         //If nothing is under, then gravity
-                        if y != self.height - 1 {
-                            match self.as_particle(x + (y + 1) * self.width) {
-                                //If underneath a sand particle is nothing
-                                Particle::Background => {
-                                    physics::gravity(self, x, y, Particle::Sand)
-                                }
-                                //If underneath a sand particle is another sand particle
-                                Particle::Sand => physics::solid_cascade(self, x, y),
-                                Particle::Water => physics::sink_solid(self, x, y),
-                            }
+                        match self.as_particle(x + (y + 1) * self.width) {
+                            //If underneath a sand particle is nothing
+                            Particle::Background => physics::gravity(self, x, y, Particle::Sand),
+                            //If underneath a sand particle is another sand particle
+                            Particle::Sand => physics::solid_cascade(self, x, y),
+                            Particle::Water => physics::sink_solid(self, x, y),
+                            Particle::Frame => (),
                         }
                     }
                     Particle::Water => {
                         //If nothing is under, then gravity
-                        if y != self.height - 1 {
-                            match self.as_particle(x + (y + 1) * self.width) {
-                                //If underneath a sand particle is nothing
-                                Particle::Background => {
-                                    physics::gravity(self, x, y, Particle::Water)
-                                }
-                                //If underneath a sand particle is another sand particle
-                                Particle::Sand => physics::solid_cascade(self, x, y),
-                                Particle::Water => physics::fluid_cascade(self, x, y),
-                            }
+                        match self.as_particle(x + (y + 1) * self.width) {
+                            //If underneath a sand particle is nothing
+                            Particle::Background => physics::gravity(self, x, y, Particle::Water),
+                            //If underneath a sand particle is another sand particle
+                            Particle::Sand => physics::solid_cascade(self, x, y),
+                            Particle::Water => physics::fluid_cascade(self, x, y),
+                            Particle::Frame => (),
                         }
                     }
                     Particle::Background => (),
+                    Particle::Frame => (),
                 }
             }
         }
@@ -93,6 +120,7 @@ impl Screen {
 pub enum Particle {
     Sand,
     Water,
+    Frame,
     Background,
 }
 
@@ -101,6 +129,7 @@ impl Particle {
         match *self {
             Particle::Sand => 0xe4bc80,
             Particle::Water => 0x74ccf4,
+            Particle::Frame => 0x808080,
             Particle::Background => 0x000000,
         }
     }
@@ -110,7 +139,7 @@ fn main() {
     // Create a window with a specific resolution
     let mut screen: Screen = Screen::new(200, 100);
     let mut selected_particle: Particle = Particle::Sand;
-    screen.update_window();
+    screen.draw_frame();
     while screen.window.is_open() && !screen.window.is_key_down(Key::Escape) {
         // Get the current mouse position
         if screen.window.get_mouse_down(MouseButton::Left) {
@@ -120,7 +149,14 @@ fn main() {
             let click_y: usize = mouse_pos.1 as usize;
             println!("x: {click_x}, y: {click_y}");
             // Set the pixel at the mouse click position to green
-            screen.buffer[click_x + click_y * screen.width] = selected_particle.get_color();
+            match screen.as_particle(click_x + click_y * screen.width) {
+                Particle::Background => {
+                    screen.buffer[click_x + click_y * screen.width] = selected_particle.get_color()
+                }
+                Particle::Sand => selected_particle = Particle::Sand,
+                Particle::Water => selected_particle = Particle::Water,
+                Particle::Frame => (),
+            }
             // RGB value for green
         }
         if screen.window.is_key_down(Key::S) {
