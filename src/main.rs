@@ -91,7 +91,7 @@ impl Screen {
                             //If underneath a sand particle is nothing
                             Particle::Background => physics::gravity(self, x, y, Particle::Sand),
                             //If underneath a sand particle is another sand particle
-                            Particle::Sand => physics::solid_cascade(self, x, y, Particle::Sand),
+                            Particle::Sand => physics::solid_cascade(self, x, y),
                             Particle::Water => physics::sink_solid(self, x, y),
                             Particle::Frame => (),
                         }
@@ -102,8 +102,8 @@ impl Screen {
                             //If underneath a sand particle is nothing
                             Particle::Background => physics::gravity(self, x, y, Particle::Water),
                             //If underneath a sand particle is another sand particle
-                            Particle::Sand => physics::solid_cascade(self, x, y, Particle::Water),
-                            Particle::Water => physics::fluid_cascade(self, x, y),
+                            Particle::Sand => physics::fluid_cascade(self, x, y),
+                            Particle::Water => physics::fluid_level(self, x, y),
                             Particle::Frame => (),
                         }
                     }
