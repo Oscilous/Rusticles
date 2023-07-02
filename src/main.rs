@@ -81,19 +81,17 @@ impl Screen {
             .unwrap();
     }
     fn update_physics(&mut self) {
-        let mut sand_amount = 0;
         for y in (0..(self.height)).rev() {
             for x in (0..(self.width)).rev() {
                 //Firstly sand physics
                 match self.as_particle(x + y * self.width) {
                     Particle::Sand => {
-                        sand_amount += 1;
                         //If nothing is under, then gravity
                         match self.as_particle(x + (y + 1) * self.width) {
                             //If underneath a sand particle is nothing
                             Particle::Background => physics::gravity(self, x, y, Particle::Sand),
                             //If underneath a sand particle is another sand particle
-                            Particle::Sand => physics::solid_cascade(self, x, y),
+                            Particle::Sand => physics::solid_cascade(self, x, y, Particle::Sand),
                             Particle::Water => physics::sink_solid(self, x, y),
                             Particle::Frame => (),
                         }
@@ -104,13 +102,21 @@ impl Screen {
                             //If underneath a sand particle is nothing
                             Particle::Background => physics::gravity(self, x, y, Particle::Water),
                             //If underneath a sand particle is another sand particle
-                            Particle::Sand => physics::solid_cascade(self, x, y),
+                            Particle::Sand => physics::solid_cascade(self, x, y, Particle::Water),
                             Particle::Water => physics::fluid_cascade(self, x, y),
                             Particle::Frame => (),
                         }
                     }
                     Particle::Background => (),
                     Particle::Frame => (),
+                }
+            }
+        }
+        let mut sand_amount = -891;
+        for y in (0..(self.height)).rev() {
+            for x in (0..(self.width)).rev() {
+                if self.buffer[x + y * self.width] == Particle::Sand.get_color() {
+                    sand_amount += 1;
                 }
             }
         }

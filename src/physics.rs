@@ -58,74 +58,51 @@ fn cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
 }
 
 pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
-    match check_postion_fluid(screen, x, y) {
-        Position::LeftSide => {
-            let mut negative_index = 0;
-            while screen.buffer[x - negative_index + (y + 1) * screen.width]
-                != Particle::Background.get_color()
-                && x - negative_index != 0
-            {
-                negative_index += 1;
-            }
-            screen.buffer[x - negative_index + y * screen.width] = Particle::Water.get_color();
-            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-        }
-        Position::RightSide => {
-            let mut positive_index = 0;
-            while screen.buffer[x + positive_index + (y + 1) * screen.width]
-                != Particle::Background.get_color()
-                && x + positive_index != screen.width - 1
-            {
-                positive_index += 1;
-            }
-            screen.buffer[x + positive_index + y * screen.width] = Particle::Water.get_color();
-            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-        }
-        Position::Middle => {
-            let target_index = check_for_closest_side(screen, x, y);
-            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-            screen.buffer[target_index + y * screen.width] = Particle::Water.get_color();
-        }
-    }
-}
-
-fn check_for_closest_side(screen: &mut Screen, x: usize, y: usize) -> usize {
-    let mut at_edge: bool = false;
     let mut positive_index = 0;
-    while screen.buffer[x + positive_index + (y + 1) * screen.width]
-        != Particle::Background.get_color()
-    {
-        if x + positive_index == screen.width - 1
-            || screen.buffer[x + positive_index + (y + 1) * screen.width]
-                == Particle::Sand.get_color()
+    loop {
+        positive_index += 1;
+        if screen.buffer[x + positive_index + (y + 1) * screen.width] != Particle::Water.get_color()
         {
-            at_edge = true;
             break;
         }
-        positive_index += 1;
     }
 
     let mut negative_index = 0;
-    while screen.buffer[x - negative_index + (y + 1) * screen.width]
-        != Particle::Background.get_color()
-    {
-        if x - negative_index == 0
-            || screen.buffer[x - negative_index + (y + 1) * screen.width]
-                == Particle::Sand.get_color()
+    loop {
+        negative_index += 1;
+        if screen.buffer[x - negative_index + (y + 1) * screen.width] != Particle::Water.get_color()
         {
-            at_edge = true;
             break;
         }
-        negative_index += 1;
     }
-    if at_edge == true {
-        return x;
-    }
-
     if positive_index < negative_index {
-        x + positive_index
-    } else {
-        x - negative_index
+        if screen.buffer[x + positive_index + (y + 1) * screen.width]
+            == Particle::Background.get_color()
+        {
+            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+            screen.buffer[x + positive_index + (y + 1) * screen.width] =
+                Particle::Water.get_color();
+        } else if screen.buffer[x - negative_index + (y + 1) * screen.width]
+            == Particle::Background.get_color()
+        {
+            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+            screen.buffer[x - negative_index + (y + 1) * screen.width] =
+                Particle::Water.get_color();
+        }
+    } else if positive_index >= negative_index {
+        if screen.buffer[x - negative_index + (y + 1) * screen.width]
+            == Particle::Background.get_color()
+        {
+            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+            screen.buffer[x - negative_index + (y + 1) * screen.width] =
+                Particle::Water.get_color();
+        } else if screen.buffer[x + positive_index + (y + 1) * screen.width]
+            == Particle::Background.get_color()
+        {
+            screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+            screen.buffer[x + positive_index + (y + 1) * screen.width] =
+                Particle::Water.get_color();
+        }
     }
 }
 
