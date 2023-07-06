@@ -112,15 +112,15 @@ impl Screen {
                 }
             }
         }
-        let mut sand_amount = -891;
+        let mut water_amount = -882;
         for y in (0..(self.height)).rev() {
             for x in (0..(self.width)).rev() {
-                if self.buffer[x + y * self.width] == Particle::Sand.get_color() {
-                    sand_amount += 1;
+                if self.buffer[x + y * self.width] == Particle::Water.get_color() {
+                    water_amount += 1;
                 }
             }
         }
-        println!("Sand: {sand_amount}");
+        println!("Water: {water_amount}");
     }
 }
 pub enum Particle {

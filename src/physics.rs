@@ -21,10 +21,7 @@ pub fn solid_cascade(screen: &mut Screen, x: usize, y: usize) {
     match check_postion(screen, x) {
         Position::LeftSide => cascade_to_the_right(screen, x, y),
         Position::RightSide => cascade_to_the_left(screen, x, y),
-        Position::Middle => {
-            cascade_to_the_left(screen, x, y);
-            cascade_to_the_right(screen, x, y);
-        }
+        Position::Middle => cascade_middle(screen, x, y),
     }
 }
 fn check_postion(screen: &Screen, x: usize) -> Position {
@@ -67,6 +64,28 @@ fn cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
         }
         false => (),
     };
+}
+
+fn cascade_middle(screen: &mut Screen, x: usize, y: usize) {
+    if screen
+        .as_particle((x + 1) + (y + 1) * screen.width)
+        .is_water_or_background()
+        && screen
+            .as_particle((x + 1) + y * screen.width)
+            .is_water_or_background()
+    {
+        screen.buffer[x + y * screen.width] = screen.buffer[(x + 1) + (y + 1) * screen.width];
+        screen.buffer[(x + 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
+    } else if screen
+        .as_particle((x - 1) + (y + 1) * screen.width)
+        .is_water_or_background()
+        && screen
+            .as_particle((x - 1) + y * screen.width)
+            .is_water_or_background()
+    {
+        screen.buffer[x + y * screen.width] = screen.buffer[(x - 1) + (y + 1) * screen.width];
+        screen.buffer[(x - 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
+    }
 }
 
 pub fn fluid_level(screen: &mut Screen, x: usize, y: usize) {
@@ -131,7 +150,6 @@ pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
 
 fn fluid_cascade_to_the_left(screen: &mut Screen, x: usize, y: usize) {
     if screen.buffer[(x + 1) + y * screen.width] == Particle::Background.get_color() {
-        println!("left");
         screen.buffer[(x + 1) + y * screen.width] = screen.buffer[x + y * screen.width];
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
@@ -139,7 +157,6 @@ fn fluid_cascade_to_the_left(screen: &mut Screen, x: usize, y: usize) {
 
 fn fluid_cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
     if screen.buffer[(x - 1) + y * screen.width] == Particle::Background.get_color() {
-        println!("right");
         screen.buffer[(x - 1) + y * screen.width] = screen.buffer[x + y * screen.width];
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
