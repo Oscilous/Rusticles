@@ -30,3 +30,10 @@ cargo build
 ```sh
 cargo run
 ```
+## Interacting with the simulation
+Left click on a empty pixel, to place a particle.
+Sand is selected by default.
+To change selected particle, left click on the wanted particle.
+Additionally, selected particle can be selected with the keyboard.
+Pressing "w" will select water as the selected particle.
+Pressing "s" will select sand as the selected particle.
