@@ -20,7 +20,7 @@ impl Screen {
             width,
             height,
             WindowOptions {
-                scale: Scale::X4, // Scale factor
+                scale: Scale::X8, // Scale factor
                 ..WindowOptions::default()
             },
         )

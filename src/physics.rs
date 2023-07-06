@@ -15,6 +15,7 @@ pub fn gravity(screen: &mut Screen, x: usize, y: usize, particle: Particle) {
 pub fn sink_solid(screen: &mut Screen, x: usize, y: usize) {
     screen.buffer[x + (y + 1) * screen.width] = Particle::Sand.get_color();
     screen.buffer[x + y * screen.width] = Particle::Water.get_color();
+    fluid_level(screen, x, y);
 }
 
 pub fn solid_cascade(screen: &mut Screen, x: usize, y: usize) {
