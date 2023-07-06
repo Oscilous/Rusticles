@@ -38,23 +38,35 @@ fn check_postion(screen: &Screen, x: usize) -> Position {
 }
 
 fn cascade_to_the_left(screen: &mut Screen, x: usize, y: usize) {
-    if screen.buffer[(x + 1) + (y + 1) * screen.width] == Particle::Background.get_color()
-        && screen.buffer[(x + 1) + y * screen.width] == Particle::Background.get_color()
+    match screen
+        .as_particle((x + 1) + (y + 1) * screen.width)
+        .is_water_or_background()
+        && screen
+            .as_particle((x + 1) + y * screen.width)
+            .is_water_or_background()
     {
-        println!("left");
-        screen.buffer[(x + 1) + (y + 1) * screen.width] = screen.buffer[x + y * screen.width];
-        screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-    }
+        true => {
+            screen.buffer[x + y * screen.width] = screen.buffer[(x + 1) + (y + 1) * screen.width];
+            screen.buffer[(x + 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
+        }
+        false => (),
+    };
 }
 
 fn cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
-    if screen.buffer[(x - 1) + (y + 1) * screen.width] == Particle::Background.get_color()
-        && screen.buffer[(x - 1) + y * screen.width] == Particle::Background.get_color()
+    match screen
+        .as_particle((x - 1) + (y + 1) * screen.width)
+        .is_water_or_background()
+        && screen
+            .as_particle((x - 1) + y * screen.width)
+            .is_water_or_background()
     {
-        println!("right");
-        screen.buffer[(x - 1) + (y + 1) * screen.width] = screen.buffer[x + y * screen.width];
-        screen.buffer[x + y * screen.width] = Particle::Background.get_color();
-    }
+        true => {
+            screen.buffer[x + y * screen.width] = screen.buffer[(x - 1) + (y + 1) * screen.width];
+            screen.buffer[(x - 1) + (y + 1) * screen.width] = Particle::Sand.get_color();
+        }
+        false => (),
+    };
 }
 
 pub fn fluid_level(screen: &mut Screen, x: usize, y: usize) {

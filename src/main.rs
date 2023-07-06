@@ -139,6 +139,13 @@ impl Particle {
             Particle::Background => 0x000000,
         }
     }
+    fn is_water_or_background(&self) -> bool {
+        match *self {
+            Particle::Background => true,
+            Particle::Water => true,
+            _ => false,
+        }
+    }
 }
 
 fn main() {
