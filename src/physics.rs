@@ -118,17 +118,17 @@ pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
 }
 
 fn fluid_cascade_to_the_left(screen: &mut Screen, x: usize, y: usize) {
-    if screen.buffer[(x + 1) + (y + 1) * screen.width] == Particle::Background.get_color() {
+    if screen.buffer[(x + 1) + y * screen.width] == Particle::Background.get_color() {
         println!("left");
-        screen.buffer[(x + 1) + (y + 1) * screen.width] = screen.buffer[x + y * screen.width];
+        screen.buffer[(x + 1) + y * screen.width] = screen.buffer[x + y * screen.width];
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
 }
 
 fn fluid_cascade_to_the_right(screen: &mut Screen, x: usize, y: usize) {
-    if screen.buffer[(x - 1) + (y + 1) * screen.width] == Particle::Background.get_color() {
+    if screen.buffer[(x - 1) + y * screen.width] == Particle::Background.get_color() {
         println!("right");
-        screen.buffer[(x - 1) + (y + 1) * screen.width] = screen.buffer[x + y * screen.width];
+        screen.buffer[(x - 1) + y * screen.width] = screen.buffer[x + y * screen.width];
         screen.buffer[x + y * screen.width] = Particle::Background.get_color();
     }
 }
