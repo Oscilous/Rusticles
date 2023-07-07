@@ -139,6 +139,64 @@ pub fn fluid_level(screen: &mut Screen, x: usize, y: usize) {
 }
 
 pub fn fluid_cascade(screen: &mut Screen, x: usize, y: usize) {
+    if screen.buffer[(x + 1) + (y + 1) * screen.width] == Particle::Sand.get_color()
+        && screen.buffer[(x - 1) + (y + 1) * screen.width] == Particle::Sand.get_color()
+        && screen.buffer[(x + 1) + (y) * screen.width] == Particle::Background.get_color()
+        && screen.buffer[(x - 1) + (y) * screen.width] == Particle::Background.get_color()
+    {
+        println!("called");
+        let mut positive_index = 0;
+        loop {
+            positive_index += 1;
+            if screen.buffer[x + positive_index + (y + 1) * screen.width]
+                != Particle::Sand.get_color()
+            //&& screen.buffer[x + positive_index + (y + 1) * screen.width] == Particle::Frame.get_color()
+            {
+                break;
+            }
+        }
+
+        let mut negative_index = 0;
+        loop {
+            negative_index += 1;
+            if screen.buffer[x - negative_index + (y + 1) * screen.width]
+                != Particle::Sand.get_color()
+            //&& screen.buffer[x - negative_index + (y + 1) * screen.width] == Particle::Frame.get_color()
+            {
+                break;
+            }
+        }
+        println!("pos: {}, neg: {}", positive_index, negative_index);
+        if positive_index < negative_index {
+            if screen.buffer[x + positive_index + (y + 1) * screen.width]
+                == Particle::Background.get_color()
+            {
+                screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+                screen.buffer[x + positive_index + (y + 1) * screen.width] =
+                    Particle::Water.get_color();
+            } else if screen.buffer[x - negative_index + (y + 1) * screen.width]
+                == Particle::Background.get_color()
+            {
+                screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+                screen.buffer[x - negative_index + (y + 1) * screen.width] =
+                    Particle::Water.get_color();
+            }
+        } else if positive_index >= negative_index {
+            if screen.buffer[x - negative_index + (y + 1) * screen.width]
+                == Particle::Background.get_color()
+            {
+                screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+                screen.buffer[x - negative_index + (y + 1) * screen.width] =
+                    Particle::Water.get_color();
+            } else if screen.buffer[x + positive_index + (y + 1) * screen.width]
+                == Particle::Background.get_color()
+            {
+                screen.buffer[x + y * screen.width] = Particle::Background.get_color();
+                screen.buffer[x + positive_index + (y + 1) * screen.width] =
+                    Particle::Water.get_color();
+            }
+        }
+    }
     match check_postion(screen, x) {
         Position::LeftSide => fluid_cascade_to_the_right(screen, x, y),
         Position::RightSide => fluid_cascade_to_the_left(screen, x, y),
