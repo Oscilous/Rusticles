@@ -1,5 +1,5 @@
 # Rusticles
-Simple sand/water particle physics simulation implemented in Rust
+Simple sand/water particle cellular automata implemented in Rust
 
 ## Running the project
 Before you start, make sure you have rustc and cargo installed.
